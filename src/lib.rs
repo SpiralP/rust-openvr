@@ -2,8 +2,8 @@ extern crate openvr_sys;
 #[macro_use]
 extern crate lazy_static;
 
-use std::cell::Cell;
 use std::ffi::{CStr, CString};
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error, fmt, mem, ptr};
 
@@ -118,6 +118,32 @@ impl Context {
         if self.live.swap(false, Ordering::Acquire) {
             sys::VR_ShutdownInternal();
             INITIALIZED.store(false, Ordering::Release);
+        }
+    }
+
+
+    /// # Safety
+    ///
+    /// it just works
+    pub unsafe fn get_runtime_path(&self) -> Option<PathBuf> {
+        if !self.live.load(Ordering::Relaxed) {
+            return None;
+        }
+
+        let mut runtime_path = [0; 1024];
+        let mut unrequired_size = 0;
+        if sys::VR_GetRuntimePath(
+            runtime_path.as_mut_ptr(),
+            runtime_path.len() as _,
+            &mut unrequired_size,
+        ) && (unrequired_size as usize) < runtime_path.len()
+        {
+            CStr::from_ptr(runtime_path.as_ptr())
+                .to_str()
+                .ok()
+                .map(|s| s.into())
+        } else {
+            None
         }
     }
 }
