@@ -16,6 +16,7 @@ pub mod compositor;
 pub mod property;
 pub mod render_models;
 pub mod system;
+pub mod applications;
 
 pub use tracking::*;
 
@@ -59,6 +60,7 @@ pub struct System(&'static sys::VR_IVRSystem_FnTable);
 pub struct Compositor(&'static sys::VR_IVRCompositor_FnTable);
 pub struct RenderModels(&'static sys::VR_IVRRenderModels_FnTable);
 pub struct Chaperone(&'static sys::VR_IVRChaperone_FnTable);
+pub struct Applications(&'static sys::VR_IVRApplications_FnTable);
 
 /// Entry points into OpenVR.
 ///
@@ -92,6 +94,9 @@ impl Context {
     }
     pub fn chaperone(&self) -> Result<Chaperone, InitError> {
         load(sys::IVRChaperone_Version).map(|x| unsafe { Chaperone(&*x) })
+    }
+    pub fn applications(&self) -> Result<Applications, InitError> {
+        load(sys::IVRApplications_Version).map(|x| unsafe { Applications(&*x) })
     }
 }
 
