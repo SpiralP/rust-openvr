@@ -1,5 +1,7 @@
 use std::{
+    error::Error,
     ffi::{CStr, CString},
+    fmt::Display,
     path::Path,
 };
 
@@ -9,6 +11,20 @@ use openvr_sys::{
 
 use crate::Applications;
 
+#[derive(Debug)]
+pub struct VRApplicationError(pub EVRApplicationError);
+impl Display for VRApplicationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "EVRApplicationError {}", self.0)
+    }
+}
+impl Error for VRApplicationError {}
+impl From<EVRApplicationError> for VRApplicationError {
+    fn from(err: EVRApplicationError) -> Self {
+        VRApplicationError(err)
+    }
+}
+
 impl Applications {
     /** Adds an application manifest to the list to load when building the list of installed applications.
      * Temporary manifests are not automatically loaded */
@@ -16,7 +32,7 @@ impl Applications {
         &self,
         app_manifest_full_path: &Path,
         temporary: bool,
-    ) -> Result<(), EVRApplicationError> {
+    ) -> Result<(), VRApplicationError> {
         let app_manifest_full_path =
             CString::new(app_manifest_full_path.to_string_lossy().as_bytes()).unwrap();
         let result = unsafe {
@@ -26,7 +42,7 @@ impl Applications {
         if result == EVRApplicationError_VRApplicationError_None {
             Ok(())
         } else {
-            Err(result)
+            Err(result.into())
         }
     }
 
@@ -34,7 +50,7 @@ impl Applications {
     pub fn remove_application_manifest(
         &self,
         app_manifest_full_path: &Path,
-    ) -> Result<(), EVRApplicationError> {
+    ) -> Result<(), VRApplicationError> {
         let app_manifest_full_path =
             CString::new(app_manifest_full_path.to_string_lossy().as_bytes()).unwrap();
 
@@ -45,7 +61,7 @@ impl Applications {
         if result == EVRApplicationError_VRApplicationError_None {
             Ok(())
         } else {
-            Err(result)
+            Err(result.into())
         }
     }
 
@@ -67,7 +83,7 @@ impl Applications {
     pub fn get_application_key_by_index(
         &self,
         app_index: u32,
-    ) -> Result<String, EVRApplicationError> {
+    ) -> Result<String, VRApplicationError> {
         let mut buffer = [0; k_unMaxApplicationKeyLength as _];
         unsafe {
             let result = self.0.GetApplicationKeyByIndex.unwrap()(
@@ -81,7 +97,7 @@ impl Applications {
                     .unwrap()
                     .to_string())
             } else {
-                Err(result)
+                Err(result.into())
             }
         }
     }
@@ -91,7 +107,7 @@ impl Applications {
     pub fn get_application_key_by_process_id(
         &self,
         process_id: u32,
-    ) -> Result<String, EVRApplicationError> {
+    ) -> Result<String, VRApplicationError> {
         let mut buffer = [0; k_unMaxApplicationKeyLength as _];
         unsafe {
             let result = self.0.GetApplicationKeyByProcessId.unwrap()(
@@ -105,21 +121,21 @@ impl Applications {
                     .unwrap()
                     .to_string())
             } else {
-                Err(result)
+                Err(result.into())
             }
         }
     }
 
     /** Launches the application. The existing scene application will exit and then the new application will start.
      * This call is not valid for dashboard overlay applications. */
-    pub fn launch_application(&self, app_key: &str) -> Result<(), EVRApplicationError> {
+    pub fn launch_application(&self, app_key: &str) -> Result<(), VRApplicationError> {
         let app_key = CString::new(app_key).unwrap();
         let result = unsafe { self.0.LaunchApplication.unwrap()(app_key.as_ptr() as _) };
 
         if result == EVRApplicationError_VRApplicationError_None {
             Ok(())
         } else {
-            Err(result)
+            Err(result.into())
         }
     }
 
@@ -128,14 +144,14 @@ impl Applications {
         &self,
         app_key: &str,
         auto_launch: bool,
-    ) -> Result<(), EVRApplicationError> {
+    ) -> Result<(), VRApplicationError> {
         let app_key = CString::new(app_key).unwrap();
         let result =
             unsafe { self.0.SetApplicationAutoLaunch.unwrap()(app_key.as_ptr() as _, auto_launch) };
         if result == EVRApplicationError_VRApplicationError_None {
             Ok(())
         } else {
-            Err(result)
+            Err(result.into())
         }
     }
 
