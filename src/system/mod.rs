@@ -119,6 +119,19 @@ impl System {
         unsafe { self.0.IsTrackedDeviceConnected.unwrap()(index) }
     }
 
+    /** Returns true and fills the event with the next event on the queue if there is one. If there are no events
+     * this method returns false. uncbVREvent should be the size in bytes of the VREvent_t struct */
+    pub fn poll_next_event(&self) -> Option<EventInfo> {
+        let mut event = mem::MaybeUninit::uninit();
+        if unsafe {
+            self.0.PollNextEvent.unwrap()(event.as_mut_ptr(), mem::size_of_val(&event) as u32)
+        } {
+            unsafe { Some(event.assume_init().into()) }
+        } else {
+            None
+        }
+    }
+
     pub fn poll_next_event_with_pose(
         &self,
         origin: TrackingUniverseOrigin,

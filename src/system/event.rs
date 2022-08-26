@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct EventInfo {
     /// The tracked device index of the event. For events that aren't connected to a tracked device this is
     /// k_unTrackedDeviceIndexInvalid
