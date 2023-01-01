@@ -56,11 +56,23 @@ pub unsafe fn init(ty: ApplicationType) -> Result<Context, InitError> {
     Ok(Context { live: AtomicBool::new(true) })
 }
 
-pub struct System(&'static sys::VR_IVRSystem_FnTable);
-pub struct Compositor(&'static sys::VR_IVRCompositor_FnTable);
-pub struct RenderModels(&'static sys::VR_IVRRenderModels_FnTable);
-pub struct Chaperone(&'static sys::VR_IVRChaperone_FnTable);
-pub struct Applications(&'static sys::VR_IVRApplications_FnTable);
+pub struct Applications(pub &'static sys::VR_IVRApplications_FnTable);
+pub struct Chaperone(pub &'static sys::VR_IVRChaperone_FnTable);
+pub struct ChaperoneSetup(pub &'static sys::VR_IVRChaperoneSetup_FnTable);
+pub struct Compositor(pub &'static sys::VR_IVRCompositor_FnTable);
+pub struct DriverManager(pub &'static sys::VR_IVRDriverManager_FnTable);
+pub struct ExtendedDisplay(pub &'static sys::VR_IVRExtendedDisplay_FnTable);
+pub struct Input(pub &'static sys::VR_IVRInput_FnTable);
+pub struct IOBuffer(pub &'static sys::VR_IVRIOBuffer_FnTable);
+pub struct Notifications(pub &'static sys::VR_IVRNotifications_FnTable);
+pub struct Overlay(pub &'static sys::VR_IVROverlay_FnTable);
+pub struct RenderModels(pub &'static sys::VR_IVRRenderModels_FnTable);
+pub struct Resources(pub &'static sys::VR_IVRResources_FnTable);
+pub struct Screenshots(pub &'static sys::VR_IVRScreenshots_FnTable);
+pub struct Settings(pub &'static sys::VR_IVRSettings_FnTable);
+pub struct SpatialAnchors(pub &'static sys::VR_IVRSpatialAnchors_FnTable);
+pub struct System(pub &'static sys::VR_IVRSystem_FnTable);
+pub struct TrackedCamera(pub &'static sys::VR_IVRTrackedCamera_FnTable);
 
 /// Entry points into OpenVR.
 ///
@@ -83,20 +95,56 @@ fn load<T>(suffix: &[u8]) -> Result<*const T, InitError> {
 }
 
 impl Context {
-    pub fn system(&self) -> Result<System, InitError> {
-        load(sys::IVRSystem_Version).map(|x| unsafe { System(&*x) })
-    }
-    pub fn compositor(&self) -> Result<Compositor, InitError> {
-        load(sys::IVRCompositor_Version).map(|x| unsafe { Compositor(&*x) })
-    }
-    pub fn render_models(&self) -> Result<RenderModels, InitError> {
-        load(sys::IVRRenderModels_Version).map(|x| unsafe { RenderModels(&*x) })
+    pub fn applications(&self) -> Result<Applications, InitError> {
+        load(sys::IVRApplications_Version).map(|x| unsafe {Applications(&*x)})
     }
     pub fn chaperone(&self) -> Result<Chaperone, InitError> {
-        load(sys::IVRChaperone_Version).map(|x| unsafe { Chaperone(&*x) })
+        load(sys::IVRChaperone_Version).map(|x| unsafe {Chaperone(&*x)})
     }
-    pub fn applications(&self) -> Result<Applications, InitError> {
-        load(sys::IVRApplications_Version).map(|x| unsafe { Applications(&*x) })
+    pub fn chaperone_setup(&self) -> Result<ChaperoneSetup, InitError> {
+        load(sys::IVRChaperoneSetup_Version).map(|x| unsafe {ChaperoneSetup(&*x)})
+    }
+    pub fn compositor(&self) -> Result<Compositor, InitError> {
+        load(sys::IVRCompositor_Version).map(|x| unsafe {Compositor(&*x)})
+    }
+    pub fn driver_manager(&self) -> Result<DriverManager, InitError> {
+        load(sys::IVRDriverManager_Version).map(|x| unsafe {DriverManager(&*x)})
+    }
+    pub fn extended_display(&self) -> Result<ExtendedDisplay, InitError> {
+        load(sys::IVRExtendedDisplay_Version).map(|x| unsafe {ExtendedDisplay(&*x)})
+    }
+    pub fn input(&self) -> Result<Input, InitError> {
+        load(sys::IVRInput_Version).map(|x| unsafe {Input(&*x)})
+    }
+    pub fn io_buffer(&self) -> Result<IOBuffer, InitError> {
+        load(sys::IVRIOBuffer_Version).map(|x| unsafe {IOBuffer(&*x)})
+    }
+    pub fn notifications(&self) -> Result<Notifications, InitError> {
+        load(sys::IVRNotifications_Version).map(|x| unsafe {Notifications(&*x)})
+    }
+    pub fn overlay(&self) -> Result<Overlay, InitError> {
+        load(sys::IVROverlay_Version).map(|x| unsafe {Overlay(&*x)})
+    }
+    pub fn render_models(&self) -> Result<RenderModels, InitError> {
+        load(sys::IVRRenderModels_Version).map(|x| unsafe {RenderModels(&*x)})
+    }
+    pub fn resources(&self) -> Result<Resources, InitError> {
+        load(sys::IVRResources_Version).map(|x| unsafe {Resources(&*x)})
+    }
+    pub fn screenshots(&self) -> Result<Screenshots, InitError> {
+        load(sys::IVRScreenshots_Version).map(|x| unsafe {Screenshots(&*x)})
+    }
+    pub fn settings(&self) -> Result<Settings, InitError> {
+        load(sys::IVRSettings_Version).map(|x| unsafe {Settings(&*x)})
+    }
+    pub fn spatial_anchors(&self) -> Result<SpatialAnchors, InitError> {
+        load(sys::IVRSpatialAnchors_Version).map(|x| unsafe {SpatialAnchors(&*x)})
+    }
+    pub fn system(&self) -> Result<System, InitError> {
+        load(sys::IVRSystem_Version).map(|x| unsafe {System(&*x)})
+    }
+    pub fn tracked_camera(&self) -> Result<TrackedCamera, InitError> {
+        load(sys::IVRTrackedCamera_Version).map(|x| unsafe {TrackedCamera(&*x)})
     }
 }
 
