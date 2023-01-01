@@ -17,6 +17,7 @@ pub mod property;
 pub mod render_models;
 pub mod system;
 pub mod applications;
+pub mod overlay;
 
 pub use tracking::*;
 
