@@ -18,6 +18,7 @@ pub mod render_models;
 pub mod system;
 pub mod applications;
 pub mod overlay;
+pub mod notifications;
 
 pub use tracking::*;
 
