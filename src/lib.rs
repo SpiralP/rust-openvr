@@ -1,4 +1,3 @@
-extern crate openvr_sys;
 #[macro_use]
 extern crate lazy_static;
 
@@ -20,12 +19,12 @@ pub mod applications;
 pub mod overlay;
 pub mod notifications;
 
-pub use tracking::*;
+pub use crate::tracking::*;
 
-pub use sys::VkDevice_T;
-pub use sys::VkInstance_T;
-pub use sys::VkPhysicalDevice_T;
-pub use sys::VkQueue_T;
+pub use crate::sys::VkDevice_T;
+pub use crate::sys::VkInstance_T;
+pub use crate::sys::VkPhysicalDevice_T;
+pub use crate::sys::VkQueue_T;
 
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 

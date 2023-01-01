@@ -3,7 +3,7 @@ use std::{fmt, mem, ptr, slice};
 
 use openvr_sys as sys;
 
-use {get_string, ControllerState, RenderModels};
+use crate::{get_string, ControllerState, RenderModels};
 
 impl RenderModels {
     /// Loads and returns a render model for use in the application. `name` should be a render model name from the

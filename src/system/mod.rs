@@ -206,7 +206,7 @@ impl System {
 
     pub fn vulkan_output_device(
         &self,
-        instance: *mut VkInstance_T,
+        instance: &mut VkInstance_T,
     ) -> Option<*mut VkPhysicalDevice_T> {
         unsafe {
             let mut device = mem::uninitialized();
