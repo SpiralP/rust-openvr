@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::{error, fmt, mem, ptr};
 
-use openvr_sys as sys;
+pub use openvr_sys as sys;
 
 mod tracking;
 
