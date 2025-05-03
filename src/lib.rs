@@ -4,20 +4,20 @@ extern crate lazy_static;
 use std::ffi::{CStr, CString};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::{error, fmt, mem, ptr};
+use std::{error, fmt, ptr};
 
 pub use openvr_sys as sys;
 
 mod tracking;
 
+pub mod applications;
 pub mod chaperone;
 pub mod compositor;
+pub mod notifications;
+pub mod overlay;
 pub mod property;
 pub mod render_models;
 pub mod system;
-pub mod applications;
-pub mod overlay;
-pub mod notifications;
 
 pub use crate::tracking::*;
 
@@ -54,7 +54,9 @@ pub unsafe fn init(ty: ApplicationType) -> Result<Context, InitError> {
             sys::EVRInitError_VRInitError_Init_InterfaceNotFound,
         ));
     }
-    Ok(Context { live: AtomicBool::new(true) })
+    Ok(Context {
+        live: AtomicBool::new(true),
+    })
 }
 
 pub struct Applications(pub &'static sys::VR_IVRApplications_FnTable);
@@ -80,7 +82,9 @@ pub struct TrackedCamera(pub &'static sys::VR_IVRTrackedCamera_FnTable);
 /// At most one of this object may exist at a time.
 ///
 /// See safety notes in `init`.
-pub struct Context { live: AtomicBool }
+pub struct Context {
+    live: AtomicBool,
+}
 
 fn load<T>(suffix: &[u8]) -> Result<*const T, InitError> {
     let mut magic = Vec::from(b"FnTable:".as_ref());
@@ -97,55 +101,55 @@ fn load<T>(suffix: &[u8]) -> Result<*const T, InitError> {
 
 impl Context {
     pub fn applications(&self) -> Result<Applications, InitError> {
-        load(sys::IVRApplications_Version).map(|x| unsafe {Applications(&*x)})
+        load(sys::IVRApplications_Version).map(|x| unsafe { Applications(&*x) })
     }
     pub fn chaperone(&self) -> Result<Chaperone, InitError> {
-        load(sys::IVRChaperone_Version).map(|x| unsafe {Chaperone(&*x)})
+        load(sys::IVRChaperone_Version).map(|x| unsafe { Chaperone(&*x) })
     }
     pub fn chaperone_setup(&self) -> Result<ChaperoneSetup, InitError> {
-        load(sys::IVRChaperoneSetup_Version).map(|x| unsafe {ChaperoneSetup(&*x)})
+        load(sys::IVRChaperoneSetup_Version).map(|x| unsafe { ChaperoneSetup(&*x) })
     }
     pub fn compositor(&self) -> Result<Compositor, InitError> {
-        load(sys::IVRCompositor_Version).map(|x| unsafe {Compositor(&*x)})
+        load(sys::IVRCompositor_Version).map(|x| unsafe { Compositor(&*x) })
     }
     pub fn driver_manager(&self) -> Result<DriverManager, InitError> {
-        load(sys::IVRDriverManager_Version).map(|x| unsafe {DriverManager(&*x)})
+        load(sys::IVRDriverManager_Version).map(|x| unsafe { DriverManager(&*x) })
     }
     pub fn extended_display(&self) -> Result<ExtendedDisplay, InitError> {
-        load(sys::IVRExtendedDisplay_Version).map(|x| unsafe {ExtendedDisplay(&*x)})
+        load(sys::IVRExtendedDisplay_Version).map(|x| unsafe { ExtendedDisplay(&*x) })
     }
     pub fn input(&self) -> Result<Input, InitError> {
-        load(sys::IVRInput_Version).map(|x| unsafe {Input(&*x)})
+        load(sys::IVRInput_Version).map(|x| unsafe { Input(&*x) })
     }
     pub fn io_buffer(&self) -> Result<IOBuffer, InitError> {
-        load(sys::IVRIOBuffer_Version).map(|x| unsafe {IOBuffer(&*x)})
+        load(sys::IVRIOBuffer_Version).map(|x| unsafe { IOBuffer(&*x) })
     }
     pub fn notifications(&self) -> Result<Notifications, InitError> {
-        load(sys::IVRNotifications_Version).map(|x| unsafe {Notifications(&*x)})
+        load(sys::IVRNotifications_Version).map(|x| unsafe { Notifications(&*x) })
     }
     pub fn overlay(&self) -> Result<Overlay, InitError> {
-        load(sys::IVROverlay_Version).map(|x| unsafe {Overlay(&*x)})
+        load(sys::IVROverlay_Version).map(|x| unsafe { Overlay(&*x) })
     }
     pub fn render_models(&self) -> Result<RenderModels, InitError> {
-        load(sys::IVRRenderModels_Version).map(|x| unsafe {RenderModels(&*x)})
+        load(sys::IVRRenderModels_Version).map(|x| unsafe { RenderModels(&*x) })
     }
     pub fn resources(&self) -> Result<Resources, InitError> {
-        load(sys::IVRResources_Version).map(|x| unsafe {Resources(&*x)})
+        load(sys::IVRResources_Version).map(|x| unsafe { Resources(&*x) })
     }
     pub fn screenshots(&self) -> Result<Screenshots, InitError> {
-        load(sys::IVRScreenshots_Version).map(|x| unsafe {Screenshots(&*x)})
+        load(sys::IVRScreenshots_Version).map(|x| unsafe { Screenshots(&*x) })
     }
     pub fn settings(&self) -> Result<Settings, InitError> {
-        load(sys::IVRSettings_Version).map(|x| unsafe {Settings(&*x)})
+        load(sys::IVRSettings_Version).map(|x| unsafe { Settings(&*x) })
     }
     pub fn spatial_anchors(&self) -> Result<SpatialAnchors, InitError> {
-        load(sys::IVRSpatialAnchors_Version).map(|x| unsafe {SpatialAnchors(&*x)})
+        load(sys::IVRSpatialAnchors_Version).map(|x| unsafe { SpatialAnchors(&*x) })
     }
     pub fn system(&self) -> Result<System, InitError> {
-        load(sys::IVRSystem_Version).map(|x| unsafe {System(&*x)})
+        load(sys::IVRSystem_Version).map(|x| unsafe { System(&*x) })
     }
     pub fn tracked_camera(&self) -> Result<TrackedCamera, InitError> {
-        load(sys::IVRTrackedCamera_Version).map(|x| unsafe {TrackedCamera(&*x)})
+        load(sys::IVRTrackedCamera_Version).map(|x| unsafe { TrackedCamera(&*x) })
     }
 }
 
@@ -166,7 +170,7 @@ impl Context {
     /// attempting to free graphics resources.
     ///
     /// No calls to other OpenVR methods may be made after this has been called unless a new `Context` is first
-   
+
     /// constructed.
     pub unsafe fn shutdown(&self) {
         if self.live.swap(false, Ordering::Acquire) {
@@ -174,7 +178,6 @@ impl Context {
             INITIALIZED.store(false, Ordering::Release);
         }
     }
-
 
     /// # Safety
     ///
@@ -230,24 +233,21 @@ pub struct InitError(sys::EVRInitError);
 impl fmt::Debug for InitError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let msg = unsafe { CStr::from_ptr(sys::VR_GetVRInitErrorAsSymbol(self.0)) };
-        f.pad(
-            msg.to_str()
-                .expect("OpenVR init error symbol was not valid UTF-8"),
-        )
+        f.pad(msg.to_str().unwrap_or(
+            "OpenVR init error description was not valid UTF-8, error description is unavailable.",
+        ))
     }
 }
 
-impl error::Error for InitError {
-    fn description(&self) -> &str {
-        let msg = unsafe { CStr::from_ptr(sys::VR_GetVRInitErrorAsEnglishDescription(self.0)) };
-        msg.to_str()
-            .expect("OpenVR init error description was not valid UTF-8")
-    }
-}
+impl error::Error for InitError {}
 
 impl fmt::Display for InitError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.pad(error::Error::description(self))
+        let msg = unsafe { CStr::from_ptr(sys::VR_GetVRInitErrorAsEnglishDescription(self.0)) };
+        let description = msg.to_str().unwrap_or(
+            "OpenVR init error description was not valid UTF-8, error description is unavailable.",
+        );
+        f.pad(description)
     }
 }
 
@@ -263,11 +263,13 @@ unsafe fn get_string<F: FnMut(*mut std::os::raw::c_char, u32) -> u32>(mut f: F) 
     if n == 0 {
         return None;
     }
-    let mut storage = Vec::new();
-    storage.reserve_exact(n as usize);
-    storage.resize(n as usize, mem::uninitialized());
+
+    let mut storage = Vec::with_capacity(n as usize);
+    storage.set_len(n as usize); // SAFETY: We're ensuring it will be written into properly
+
     let n_ = f(storage.as_mut_ptr() as *mut _, n);
     assert!(n == n_);
+
     storage.truncate((n - 1) as usize); // Strip trailing null
     Some(CString::from_vec_unchecked(storage))
 }
@@ -308,4 +310,78 @@ pub mod button_id {
     pub const STEAM_VR_TRIGGER: sys::EVRButtonId = sys::EVRButtonId_k_EButton_SteamVR_Trigger;
     pub const DASHBOARD_BACK: sys::EVRButtonId = sys::EVRButtonId_k_EButton_Dashboard_Back;
     pub const MAX: sys::EVRButtonId = sys::EVRButtonId_k_EButton_Max;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::CString;
+    use std::ptr;
+
+    /// Mock function that simulates an OpenVR function returning a string.
+    fn mock_success(output: *mut std::os::raw::c_char, size: u32) -> u32 {
+        let text = "OpenVR Test";
+        let c_str = CString::new(text).unwrap();
+        let bytes = c_str.as_bytes_with_nul();
+
+        if size == 0 {
+            return bytes.len() as u32; // First call, return required size
+        }
+
+        unsafe {
+            ptr::copy_nonoverlapping(bytes.as_ptr(), output as *mut u8, bytes.len());
+        }
+
+        bytes.len() as u32
+    }
+
+    /// Mock function that simulates an OpenVR function returning an empty string (no data).
+    fn mock_empty(_: *mut std::os::raw::c_char, _: u32) -> u32 {
+        0
+    }
+
+    #[test]
+    fn test_get_string_success() {
+        let result = unsafe { get_string(mock_success) };
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().to_str().unwrap(), "OpenVR Test");
+    }
+
+    #[test]
+    fn test_get_string_empty() {
+        let result = unsafe { get_string(mock_empty) };
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_get_string_function_called_twice() {
+        // Get string should call once for the size and second time to copy
+        // https://github.com/ValveSoftware/openvr/wiki/IVRSystem::GetTrackedDeviceProperty
+
+        let mut call_count = 0;
+
+        let mock_resizing = |output: *mut std::os::raw::c_char, size: u32| -> u32 {
+            call_count += 1;
+            let text = "Resize Test";
+            let c_str = CString::new(text).unwrap();
+            let bytes = c_str.as_bytes_with_nul();
+
+            if size == 0 {
+                return bytes.len() as u32;
+            }
+
+            unsafe {
+                ptr::copy_nonoverlapping(bytes.as_ptr(), output as *mut u8, bytes.len());
+            }
+
+            bytes.len() as u32
+        };
+
+        let result = unsafe { get_string(mock_resizing) };
+
+        assert!(result.is_some());
+        assert_eq!(result.unwrap().to_str().unwrap(), "Resize Test");
+        // Ensure it was called twice (first to get size, second to write)
+        assert_eq!(call_count, 2);
+    }
 }

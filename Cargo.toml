@@ -1,13 +1,15 @@
 [package]
 name = "openvr"
-version = "0.6.0"
-edition = "2021"
+version = "0.7.0"
 authors = [
     "Colin Sherratt",
     "Erick Tryzelaar",
     "Rene Eichhorn",
-    "Benjamin Saunders"
+    "Benjamin Saunders",
+    "Alexander Brook Perry",
+    "Arthur Brainville",
 ]
+edition = "2021"
 license = "MIT"
 
 homepage = "https://github.com/rust-openvr/rust-openvr"
@@ -16,7 +18,7 @@ repository = "https://github.com/rust-openvr/rust-openvr"
 description = "A high-level binding for OpenVR."
 
 keywords = ["vr", "vive", "steamvr"]
-categories = [ "hardware-support", "api-bindings" ]
+categories = ["hardware-support", "api-bindings"]
 
 [badges]
 travis-ci = { repository = "rust-openvr/rust-openvr" }
@@ -25,3 +27,10 @@ maintenance = { status = "passively-maintained" }
 [dependencies]
 openvr_sys = { git = "https://github.com/SpiralP/rust-openvr-sys.git" }
 lazy_static = "1"
+windows = { version = "0.51.1", optional = true, features = [
+    "Win32_Graphics_Direct3D11",
+] }
+
+[features]
+default = []
+submit_d3d11 = ["dep:windows"]
